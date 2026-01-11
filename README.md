@@ -26,10 +26,10 @@ A default `logback.xml` is provided at the root of the project.
 
 ## Usage
 
-To run the bot, you must provide the Discord API Token and the Role ID to assign to new members.
+To run the bot, you must provide the Discord API Token and the JDBC Configuration properties file.
 
 ```bash
-java -Dlogback.configurationFile=logback.xml -jar target/Guru-0.1.0-SNAPSHOT.jar -apiToken <YOUR_DISCORD_TOKEN> -role <ROLE_NAME>
+java -Dlogback.configurationFile=logback.xml -jar target/Guru-0.1.0-SNAPSHOT.jar -apiToken <YOUR_DISCORD_TOKEN> -jdbcConfig <PATH_TO_JDBC_PROPERTIES>
 ```
 
 ### Arguments
@@ -37,4 +37,4 @@ java -Dlogback.configurationFile=logback.xml -jar target/Guru-0.1.0-SNAPSHOT.jar
 | Argument | Description | Required |
 |---|---|---|
 | `-apiToken` | The Discord Bot Token | **Yes** |
-| `-role` | The name of the role to assign to new members | **Yes** |
+| `-jdbcConfig` | The path to the JDBC Configuration properties file | **Yes** |
