@@ -2,10 +2,11 @@ package pt.procurainterna.guru;
 
 public class GuruParameters {
   public final transient String apiToken;
-  public final String roleToAssign;
+  public final JdbcConfig jdbcConfig;
 
-  public GuruParameters(String apiToken, String roleToAssign) {
+  public GuruParameters(String apiToken, JdbcConfig jdbcConfig) {
     this.apiToken = apiToken;
-    this.roleToAssign = roleToAssign;
+    this.jdbcConfig = jdbcConfig;
   }
+
 }

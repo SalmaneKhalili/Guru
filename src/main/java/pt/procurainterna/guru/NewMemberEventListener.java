@@ -1,7 +1,9 @@
 package pt.procurainterna.guru;
 
-import java.util.Iterator;
+import java.util.Optional;
 
+import org.jdbi.v3.core.Jdbi;
+import org.jdbi.v3.core.statement.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,10 +17,10 @@ public class NewMemberEventListener extends ListenerAdapter {
 
   private static final Logger logger = LoggerFactory.getLogger(NewMemberEventListener.class);
 
-  private final String roleToAssign;
+  private final Jdbi jdbi;
 
-  public NewMemberEventListener(String roleToAssign) {
-    this.roleToAssign = roleToAssign;
+  public NewMemberEventListener(Jdbi jdbi) {
+    this.jdbi = jdbi;
   }
 
   @Override
@@ -29,30 +31,40 @@ public class NewMemberEventListener extends ListenerAdapter {
     final Member member = event.getMember();
     final Guild guild = event.getGuild();
 
-    final Role role = role(guild);
+    final Optional<String> roleId = roleId(guild);
+    if (roleId.isEmpty()) {
+      logger.info("No role configured for guild {}", guild.getId());
+      return;
+    }
+
+    final Role role = role(guild, roleId.get());
 
     logger.info("Assigning role {} to member {}", role.getId(), member.getUser().getId());
     guild.addRoleToMember(member, role)
         .onSuccess(ignore -> logger.info("Role assigned successfully")).queue();
   }
 
-  private Role role(final Guild guild) throws IllegalStateException {
-    logger.info("Looking for role: {}", roleToAssign);
+  private Role role(final Guild guild, final String roleId) throws IllegalStateException {
+    logger.info("Looking for role: {}", roleId);
 
-    final Iterator<Role> roles = guild.getRolesByName(roleToAssign, false).iterator();
-
-    if (!roles.hasNext()) {
-      throw new IllegalStateException("Role " + roleToAssign + " not found");
-    }
-
-    final Role role = roles.next();
-    if (roles.hasNext()) {
-      throw new IllegalStateException("Multiple roles found for " + roleToAssign);
+    final Role role = guild.getRoleById(roleId);
+    if (role == null) {
+      throw new IllegalStateException("Role " + roleId + " not found");
     }
 
     logger.info("Found role: {}", role.getId());
 
     return role;
+  }
+
+  private Optional<String> roleId(final Guild guild) {
+    return jdbi.withHandle(handle -> {
+      final Query query =
+          handle.createQuery("SELECT role_id FROM guild_starting_role WHERE guild_id = ?").bind(0,
+              guild.getId());
+
+      return query.mapTo(String.class).findFirst();
+    });
   }
 
 }

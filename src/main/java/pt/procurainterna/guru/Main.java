@@ -1,5 +1,9 @@
 package pt.procurainterna.guru;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Properties;
 import java.util.concurrent.Future;
 
 import org.apache.commons.cli.CommandLine;
@@ -36,10 +40,10 @@ public class Main {
   private static GuruParameters parameters(String[] args) {
     final Options options = new Options();
     final Option tokenOption = new Option("apiToken", "apiToken", true, "The Discord Bot Token");
-    final Option roleOption = new Option("role", "role", true, "The Discord Bot Token");
-    tokenOption.setRequired(true);
+    final Option jdbcOption =
+        new Option("jdbcConfig", "jdbcConfig", true, "The JDBC Configuration properties file");
     options.addOption(tokenOption);
-    options.addOption(roleOption);
+    options.addOption(jdbcOption);
     final CommandLineParser parser = new DefaultParser();
     final CommandLine cmd;
     try {
@@ -50,8 +54,21 @@ public class Main {
     }
 
     final String apiToken = cmd.getOptionValue("apiToken");
-    final String roleToAssing = cmd.getOptionValue("role");
+    final String jdbcConfigValue = cmd.getOptionValue("jdbcConfig");
 
-    return new GuruParameters(apiToken, roleToAssing);
+    final Properties properties = new Properties();
+    try (final var inputStream = Files.newInputStream(Paths.get(jdbcConfigValue))) {
+      properties.load(inputStream);
+
+    } catch (IOException e) {
+      throw new IllegalStateException("Cannot load JDBC configuration", e);
+    }
+
+    final String url = properties.getProperty("url", "");
+    final String user = properties.getProperty("user", "");
+    final String password = properties.getProperty("password", "");
+    final String driverClassName = properties.getProperty("driverClassName", "");
+
+    return new GuruParameters(apiToken, new JdbcConfig(driverClassName, password, url, user));
   }
 }
