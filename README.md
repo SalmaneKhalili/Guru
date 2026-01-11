@@ -29,7 +29,7 @@ A default `logback.xml` is provided at the root of the project.
 To run the bot, you must provide the Discord API Token and the Role ID to assign to new members.
 
 ```bash
-java -Dlogback.configurationFile=logback.xml -jar target/Guru-0.1.0-SNAPSHOT.jar -apiToken <YOUR_DISCORD_TOKEN> -role <ROLE_ID>
+java -Dlogback.configurationFile=logback.xml -jar target/Guru-0.1.0-SNAPSHOT.jar -apiToken <YOUR_DISCORD_TOKEN> -role <ROLE_NAME>
 ```
 
 ### Arguments
